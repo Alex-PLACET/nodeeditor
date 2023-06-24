@@ -16,6 +16,5 @@ namespace QtNodes {
         void allowConversionFrom(const QString &id) override {
             Q_UNUSED(id)
         }
-
     };
 } // QtNodes
