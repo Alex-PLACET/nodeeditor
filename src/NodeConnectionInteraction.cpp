@@ -121,7 +121,13 @@ bool NodeConnectionInteraction::tryConnect() const
 
     // 2. Remove existing connections to the port
     AbstractGraphModel &model = _ngo.nodeScene()->graphModel();
-    auto const connected = model.connections(_ngo.nodeId(), PortType::In, targetPortIndex);
+
+    auto srcId = _ngo.nodeId();
+    if(_cgo.connectionId().outNodeId == InvalidNodeId) {
+        srcId = getNodeId(oppositePort(_cgo.connectionState().requiredPort()), _cgo.connectionId());
+    }
+
+    auto const connected = model.connections(srcId, PortType::In, targetPortIndex);
     if(!connected.empty()) {
         for(auto conId : connected) {
             _scene.undoStack().push(new DisconnectCommand(&_scene, conId));
