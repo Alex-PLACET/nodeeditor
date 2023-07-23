@@ -3,12 +3,12 @@
 #include <cmath>
 
 
-#include "QtNodes/NodeColors.hpp"
-#include "QtNodes/AbstractGraphModel"
-#include "QtNodes/internal/AbstractNodeGeometry.hpp"
-#include "QtNodes/internal/NodeStyle.hpp"
-#include "QtNodes/NodeData"
-#include "QtNodes/internal/NodeState.hpp"
+#include <QtNodes/NodeColors.hpp>
+#include <QtNodes/AbstractGraphModel>
+#include <QtNodes/internal/AbstractNodeGeometry.hpp>
+#include <QtNodes/internal/NodeStyle.hpp>
+#include <QtNodes/NodeData>
+#include <QtNodes/internal/NodeState.hpp>
 #include "AbstractGraphModel.hpp"
 #include "BasicGraphicsScene.hpp"
 #include "ConnectionGraphicsObject.hpp"

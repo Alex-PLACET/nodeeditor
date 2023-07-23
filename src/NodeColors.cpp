@@ -1,6 +1,6 @@
 
 
-#include "QtNodes/NodeColors.hpp"
+#include <QtNodes/NodeColors.hpp>
 
 QMap<QString, QColor> QtNodes::NodeColors::colors;
 
