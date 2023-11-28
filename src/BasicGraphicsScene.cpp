@@ -137,7 +137,7 @@ namespace QtNodes {
 
     ConnectionGraphicsObject *BasicGraphicsScene::connectionGraphicsObject(ConnectionId connectionId) {
         ConnectionGraphicsObject *cgo = nullptr;
-        auto it = _connectionGraphicsObjects.find(connectionId);
+        const auto it = _connectionGraphicsObjects.find(connectionId);
         if (it != _connectionGraphicsObjects.end()) {
             cgo = it->second.get();
         }
@@ -174,7 +174,7 @@ namespace QtNodes {
     }
 
     void BasicGraphicsScene::traverseGraphAndPopulateGraphicsObjects() {
-        auto allNodeIds = _graphModel.allNodeIds();
+        const auto allNodeIds = _graphModel.allNodeIds();
 
         // First create all the nodes.
         for (NodeId const nodeId: allNodeIds) {
@@ -183,15 +183,16 @@ namespace QtNodes {
 
         // Then for each node check output connections and insert them.
         for (NodeId const nodeId: allNodeIds) {
-            unsigned int nOutPorts = _graphModel.nodeData<PortCount>(nodeId, NodeRole::OutPortCount);
-
+            const unsigned int nOutPorts = _graphModel.nodeData<PortCount>(nodeId,
+                                                                           NodeRole::OutPortCount);
             for (PortIndex index = 0; index < nOutPorts; ++index) {
-                auto const &outConnectionIds = _graphModel.connections(nodeId, PortType::Out, index);
-
-                for (auto cid: outConnectionIds) {
-                    _connectionGraphicsObjects[cid] = std::make_unique<ConnectionGraphicsObject>(*this,
-                                                                                                 cid);
-                }
+                    const auto &outConnectionIds = _graphModel.connections(nodeId,
+                                                                           PortType::Out,
+                                                                           index);
+                    for (const auto &cid : outConnectionIds) {
+                        _connectionGraphicsObjects[cid]
+                            = std::make_unique<ConnectionGraphicsObject>(*this, cid);
+                    }
             }
         }
     }
@@ -253,36 +254,34 @@ namespace QtNodes {
 
         if (node) {
             node->setGeometryChanged();
-
             _nodeGeometry->recomputeSize(nodeId);
-
             node->update();
             node->moveConnections();
         }
     }
 
     void BasicGraphicsScene::onNodeClicked(NodeId const nodeId) {
-        if (_nodeDrag)
-                Q_EMIT nodeMoved(nodeId, _graphModel.nodeData(nodeId, NodeRole::Position).value<QPointF>());
+        if (_nodeDrag) {
+            Q_EMIT nodeMoved(nodeId,
+                             _graphModel.nodeData(nodeId, NodeRole::Position).value<QPointF>());
+        }
         _nodeDrag = false;
     }
 
     void BasicGraphicsScene::onModelReset() {
         _connectionGraphicsObjects.clear();
         _nodeGraphicsObjects.clear();
-
         clear();
-
         traverseGraphAndPopulateGraphicsObjects();
     }
 
     bool BasicGraphicsScene::portVacant(NodeId nodeId, PortIndex const portIndex,
                                         PortType const portType) {
-        auto const connected = _graphModel.connections(nodeId, portType, portIndex);
+        const auto connected = _graphModel.connections(nodeId, portType, portIndex);
 
-        auto policy = _graphModel.portData(nodeId, portType, portIndex,
-                                           PortRole::ConnectionPolicyRole)
-                .value<ConnectionPolicy>();
+        const auto policy
+            = _graphModel.portData(nodeId, portType, portIndex, PortRole::ConnectionPolicyRole)
+                  .value<ConnectionPolicy>();
 
         return connected.empty() || (policy == ConnectionPolicy::Many);
     };
@@ -298,7 +297,7 @@ namespace QtNodes {
         QGraphicsScene::keyPressEvent(event);
         if (event->key() == Qt::Key_F) {
             // TODO: clean up big time
-            auto sItems = selectedItems();
+            const auto sItems = selectedItems();
             if (sItems.size() == 2) {
                 // Only fuse when two items are selected
                 NodeId id1, id2;
@@ -309,16 +308,19 @@ namespace QtNodes {
                 } else {
                     return;
                 }
+
                 if (auto n = qgraphicsitem_cast<NodeGraphicsObject *>(sItems[1])) {
                     id2 = n->nodeId();
                     pos2 = n->pos().x();
                 } else {
                     return;
                 }
+
                 // Sort them accordingly
                 if (pos2 < pos1) {
                     std::swap(id1, id2);
                 }
+
                 if (_graphModel.nodeData<int>(id1, NodeRole::OutPortCount) == 0) {
                     std::swap(id1, id2);
                 }
@@ -326,6 +328,7 @@ namespace QtNodes {
                 // Find free port for node 1
                 PortIndex p1 = 0;
                 bool vacant = _graphModel.connections(id1, PortType::Out, p1).empty();
+
                 while (!vacant) {
                     p1++;
                     if (getDataType(id1, p1, PortType::Out).id == InvalidData().type().id) {
@@ -350,7 +353,10 @@ namespace QtNodes {
                     return;
                 }
 
-                ConnectionId connectionId = {.outNodeId = id1, .outPortIndex = p1, .inNodeId = id2, .inPortIndex = p1};
+                const ConnectionId connectionId = {.outNodeId = id1,
+                                                   .outPortIndex = p1,
+                                                   .inNodeId = id2,
+                                                   .inPortIndex = p1};
 
                 auto getDataTypeFromPort = [&](PortType const portType) {
                     return _graphModel.portData(getNodeId(portType, connectionId), portType,
@@ -360,11 +366,9 @@ namespace QtNodes {
 
                 // Check if connection possible
                 if (getDataTypeFromPort(PortType::Out).id == getDataTypeFromPort(PortType::In).id) {
-
                     NodeId const nodeId = getNodeId(PortType::In, connectionId);
                     PortIndex const portIndex = getPortIndex(PortType::In, connectionId);
                     auto const connections = _graphModel.connections(nodeId, PortType::In, portIndex);
-
                     _graphModel.addConnection(connectionId);
                 }
 

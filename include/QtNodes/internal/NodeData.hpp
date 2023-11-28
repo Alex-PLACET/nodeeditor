@@ -1,15 +1,14 @@
 #pragma once
 
+#include "Export.hpp"
 #include <memory>
-
+#include <set>
+#include <QColor>
+#include <QDebug>
 #include <QtCore/QObject>
 #include <QtCore/QString>
-#include <QColor>
-#include <set>
 
-#include "Export.hpp"
 
-#include <QDebug>
 namespace QtNodes {
 
 /**

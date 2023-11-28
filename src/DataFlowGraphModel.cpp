@@ -9,14 +9,12 @@ namespace QtNodes {
 
 DataFlowGraphModel::DataFlowGraphModel(std::shared_ptr<NodeDelegateModelRegistry> registry)
     : _registry(std::move(registry))
-    , _nextNodeId{0}
 {}
 
 std::unordered_set<NodeId> DataFlowGraphModel::allNodeIds() const
 {
     std::unordered_set<NodeId> nodeIds;
     for_each(_models.begin(), _models.end(), [&nodeIds](auto const &p) { nodeIds.insert(p.first); });
-
     return nodeIds;
 }
 
@@ -61,7 +59,7 @@ NodeId DataFlowGraphModel::addNode(QString const nodeType)
     std::unique_ptr<NodeDelegateModel> model = _registry->create(nodeType);
 
     if (model) {
-        NodeId newId = newNodeId();
+        const NodeId newId = newNodeId();
 
         connect(model.get(),
                 &NodeDelegateModel::dataUpdated,
@@ -103,9 +101,9 @@ NodeId DataFlowGraphModel::addNode(QString const nodeType)
     return InvalidNodeId;
 }
 
-bool DataFlowGraphModel::connectionPossible(ConnectionId const connectionId) const
+bool DataFlowGraphModel::connectionPossible(const ConnectionId connectionId) const
 {
-    auto getDataType = [&](PortType const portType) {
+    const auto getDataType = [&](const PortType portType) {
         return portData(getNodeId(portType, connectionId),
                         portType,
                         getPortIndex(portType, connectionId),
@@ -124,7 +122,7 @@ void DataFlowGraphModel::addConnection(ConnectionId const connectionId)
 
     sendConnectionCreation(connectionId);
 
-    QVariant const portDataToPropagate = portData(connectionId.outNodeId,
+    const QVariant portDataToPropagate = portData(connectionId.outNodeId,
                                                   PortType::Out,
                                                   connectionId.outPortIndex,
                                                   PortRole::Data);
@@ -140,11 +138,11 @@ void DataFlowGraphModel::sendConnectionCreation(ConnectionId const connectionId)
 {
     Q_EMIT connectionCreated(connectionId);
 
-    auto iti = _models.find(connectionId.inNodeId);
-    auto ito = _models.find(connectionId.outNodeId);
+    const auto iti = _models.find(connectionId.inNodeId);
+    const auto ito = _models.find(connectionId.outNodeId);
     if (iti != _models.end() && ito != _models.end()) {
-        auto &modeli = iti->second;
-        auto &modelo = ito->second;
+        const auto &modeli = iti->second;
+        const auto &modelo = ito->second;
         modeli->inputConnectionCreated(connectionId);
         modelo->outputConnectionCreated(connectionId);
     }
@@ -154,11 +152,11 @@ void DataFlowGraphModel::sendConnectionDeletion(ConnectionId const connectionId)
 {
     Q_EMIT connectionDeleted(connectionId);
 
-    auto iti = _models.find(connectionId.inNodeId);
-    auto ito = _models.find(connectionId.outNodeId);
+    const auto iti = _models.find(connectionId.inNodeId);
+    const auto ito = _models.find(connectionId.outNodeId);
     if (iti != _models.end() && ito != _models.end()) {
-        auto &modeli = iti->second;
-        auto &modelo = ito->second;
+        const auto &modeli = iti->second;
+        const auto &modelo = ito->second;
         modeli->inputConnectionDeleted(connectionId);
         modelo->outputConnectionDeleted(connectionId);
     }
@@ -166,19 +164,17 @@ void DataFlowGraphModel::sendConnectionDeletion(ConnectionId const connectionId)
 
 bool DataFlowGraphModel::nodeExists(NodeId const nodeId) const
 {
-    return (_models.find(nodeId) != _models.end());
+    return _models.contains(nodeId);
 }
 
 QVariant DataFlowGraphModel::nodeData(NodeId nodeId, NodeRole role) const
 {
     QVariant result;
-
-    auto it = _models.find(nodeId);
-    if (it == _models.end())
+    const auto it = _models.find(nodeId);
+    if (it == _models.end()) {
         return result;
-
-    auto &model = it->second;
-
+    }
+    const auto &model = it->second;
     switch (role) {
     case NodeRole::Type:
         result = model->name();
@@ -201,7 +197,7 @@ QVariant DataFlowGraphModel::nodeData(NodeId nodeId, NodeRole role) const
         break;
 
     case NodeRole::Style: {
-        auto style = StyleCollection::nodeStyle();
+        const auto &style = StyleCollection::nodeStyle();
         result = style.toJson().toVariantMap();
     } break;
 
@@ -233,11 +229,10 @@ QVariant DataFlowGraphModel::nodeData(NodeId nodeId, NodeRole role) const
 
 NodeFlags DataFlowGraphModel::nodeFlags(NodeId nodeId) const
 {
-    auto it = _models.find(nodeId);
-
-    if (it != _models.end() && it->second->resizable())
+    const auto it = _models.find(nodeId);
+    if (it != _models.end() && it->second->resizable()) {
         return NodeFlag::Resizable;
-
+    }
     return NodeFlag::NoFlags;
 }
 
@@ -254,9 +249,7 @@ bool DataFlowGraphModel::setNodeData(NodeId nodeId, NodeRole role, QVariant valu
         break;
     case NodeRole::Position: {
         _nodeGeometryData[nodeId].pos = value.value<QPointF>();
-
         Q_EMIT nodePositionUpdated(nodeId);
-
         result = true;
     } break;
 
@@ -296,12 +289,11 @@ QVariant DataFlowGraphModel::portData(NodeId nodeId,
                                       PortRole role) const
 {
     QVariant result;
-
-    auto it = _models.find(nodeId);
-    if (it == _models.end())
+    const auto it = _models.find(nodeId);
+    if (it == _models.end()) {
         return result;
-
-    auto &model = it->second;
+    }
+    const auto &model = it->second;
 
     switch (role) {
     case PortRole::Data:
@@ -337,11 +329,12 @@ bool DataFlowGraphModel::setPortData(
 
     QVariant result;
 
-    auto it = _models.find(nodeId);
-    if (it == _models.end())
+    const auto it = _models.find(nodeId);
+    if (it == _models.end()) {
         return false;
+    }
 
-    auto &model = it->second;
+    const auto &model = it->second;
 
     switch (role) {
     case PortRole::Data:
@@ -363,18 +356,15 @@ bool DataFlowGraphModel::setPortData(
 bool DataFlowGraphModel::deleteConnection(ConnectionId const connectionId)
 {
     bool disconnected = false;
-
-    auto it = _connectivity.find(connectionId);
+    const auto it = _connectivity.find(connectionId);
 
     if (it != _connectivity.end()) {
         disconnected = true;
-
         _connectivity.erase(it);
     }
 
     if (disconnected) {
         sendConnectionDeletion(connectionId);
-
         propagateEmptyDataTo(getNodeId(PortType::In, connectionId),
                              getPortIndex(PortType::In, connectionId));
     }
@@ -385,30 +375,25 @@ bool DataFlowGraphModel::deleteConnection(ConnectionId const connectionId)
 bool DataFlowGraphModel::deleteNode(NodeId const nodeId)
 {
     // Delete connections to this node first.
-    auto connectionIds = allConnectionIds(nodeId);
+    const auto connectionIds = allConnectionIds(nodeId);
     for (auto &cId : connectionIds) {
         deleteConnection(cId);
     }
 
     _nodeGeometryData.erase(nodeId);
     _models.erase(nodeId);
-
     Q_EMIT nodeDeleted(nodeId);
-
     return true;
 }
 
 QJsonObject DataFlowGraphModel::saveNode(NodeId const nodeId) const
 {
     QJsonObject nodeJson;
-
     nodeJson["id"] = static_cast<qint64>(nodeId);
-
     nodeJson["internal-data"] = _models.at(nodeId)->save();
 
     {
-        QPointF const pos = nodeData(nodeId, NodeRole::Position).value<QPointF>();
-
+        const QPointF pos = nodeData(nodeId, NodeRole::Position).value<QPointF>();
         QJsonObject posJson;
         posJson["x"] = pos.x();
         posJson["y"] = pos.y();
@@ -421,7 +406,6 @@ QJsonObject DataFlowGraphModel::saveNode(NodeId const nodeId) const
 QJsonObject DataFlowGraphModel::save() const
 {
     QJsonObject sceneJson;
-
     QJsonArray nodesJsonArray;
     for (auto const nodeId : allNodeIds()) {
         nodesJsonArray.append(saveNode(nodeId));
@@ -446,13 +430,13 @@ void DataFlowGraphModel::loadNode(QJsonObject const &nodeJson)
     // loading.
     // 2. When undoing the deletion command.  Conflict is not possible
     // because all the new ids were created past the removed nodes.
-    NodeId restoredNodeId = nodeJson["id"].toInt();
+    const NodeId restoredNodeId = nodeJson["id"].toInt();
 
     _nextNodeId = std::max(_nextNodeId, restoredNodeId + 1);
 
-    QJsonObject const internalDataJson = nodeJson["internal-data"].toObject();
+    const QJsonObject internalDataJson = nodeJson["internal-data"].toObject();
 
-    QString delegateModelName = internalDataJson["model-name"].toString();
+    const QString delegateModelName = internalDataJson["model-name"].toString();
 
     std::unique_ptr<NodeDelegateModel> model = _registry->create(delegateModelName);
 
@@ -467,8 +451,8 @@ void DataFlowGraphModel::loadNode(QJsonObject const &nodeJson)
 
         Q_EMIT nodeCreated(restoredNodeId);
 
-        QJsonObject posJson = nodeJson["position"].toObject();
-        QPointF const pos(posJson["x"].toDouble(), posJson["y"].toDouble());
+        const QJsonObject posJson = nodeJson["position"].toObject();
+        const QPointF pos(posJson["x"].toDouble(), posJson["y"].toDouble());
 
         setNodeData(restoredNodeId, NodeRole::Position, pos);
 
@@ -490,10 +474,8 @@ void DataFlowGraphModel::load(QJsonObject const &jsonDocument)
     QJsonArray connectionJsonArray = jsonDocument["connections"].toArray();
 
     for (QJsonValueRef connection : connectionJsonArray) {
-        QJsonObject connJson = connection.toObject();
-
-        ConnectionId connId = fromJson(connJson);
-
+        const QJsonObject connJson = connection.toObject();
+        const ConnectionId connId = fromJson(connJson);
         // Restore the connection
         addConnection(connId);
     }
@@ -505,7 +487,7 @@ void DataFlowGraphModel::onOutPortDataUpdated(NodeId const nodeId, PortIndex con
                                                                     PortType::Out,
                                                                     portIndex);
 
-    QVariant const portDataToPropagate = portData(nodeId, PortType::Out, portIndex, PortRole::Data);
+    const QVariant portDataToPropagate = portData(nodeId, PortType::Out, portIndex, PortRole::Data);
 
     for (auto const &cn : connected) {
         setPortData(cn.inNodeId, PortType::In, cn.inPortIndex, portDataToPropagate, PortRole::Data);
@@ -515,7 +497,6 @@ void DataFlowGraphModel::onOutPortDataUpdated(NodeId const nodeId, PortIndex con
 void DataFlowGraphModel::propagateEmptyDataTo(NodeId const nodeId, PortIndex const portIndex)
 {
     QVariant emptyData{};
-
     setPortData(nodeId, PortType::In, portIndex, emptyData, PortRole::Data);
 }
 

@@ -57,22 +57,20 @@ void ConnectionGraphicsObject::initializePosition()
     // we position both connection ends correctly.
 
     if (_connectionState.requiredPort() != PortType::None) {
-        PortType attachedPort = oppositePort(_connectionState.requiredPort());
+        const PortType attachedPort = oppositePort(_connectionState.requiredPort());
 
-        PortIndex portIndex = getPortIndex(attachedPort, _connectionId);
-        NodeId nodeId = getNodeId(attachedPort, _connectionId);
+        const PortIndex portIndex = getPortIndex(attachedPort, _connectionId);
+        const NodeId nodeId = getNodeId(attachedPort, _connectionId);
 
-        NodeGraphicsObject *ngo = nodeScene()->nodeGraphicsObject(nodeId);
+        const NodeGraphicsObject *ngo = nodeScene()->nodeGraphicsObject(nodeId);
 
         if (ngo) {
-            QTransform nodeSceneTransform = ngo->sceneTransform();
-
-            AbstractNodeGeometry &geometry = nodeScene()->nodeGeometry();
-
-            QPointF pos = geometry.portScenePosition(nodeId,
-                                                     attachedPort,
-                                                     portIndex,
-                                                     nodeSceneTransform);
+            const QTransform nodeSceneTransform = ngo->sceneTransform();
+            const AbstractNodeGeometry &geometry = nodeScene()->nodeGeometry();
+            const QPointF pos = geometry.portScenePosition(nodeId,
+                                                           attachedPort,
+                                                           portIndex,
+                                                           nodeSceneTransform);
 
             this->setPos(pos);
         }
@@ -98,18 +96,15 @@ ConnectionId const &ConnectionGraphicsObject::connectionId() const
 
 QRectF ConnectionGraphicsObject::boundingRect() const
 {
-    auto points = pointsC1C2();
+    const auto points = pointsC1C2();
 
     // `normalized()` fixes inverted rects.
-    QRectF basicRect = QRectF(_out, _in).normalized();
-
-    QRectF c1c2Rect = QRectF(points.first, points.second).normalized();
-
+    const QRectF basicRect = QRectF(_out, _in).normalized();
+    const QRectF c1c2Rect = QRectF(points.first, points.second).normalized();
     QRectF commonRect = basicRect.united(c1c2Rect);
-
-    auto const &connectionStyle = StyleCollection::connectionStyle();
-    float const diam = connectionStyle.pointDiameter();
-    QPointF const cornerOffset(diam, diam);
+    const auto &connectionStyle = StyleCollection::connectionStyle();
+    const float diam = connectionStyle.pointDiameter();
+    const QPointF cornerOffset(diam, diam);
 
     // Expand rect by port circle diameter
     commonRect.setTopLeft(commonRect.topLeft() - cornerOffset);
@@ -135,38 +130,36 @@ QPainterPath ConnectionGraphicsObject::shape() const
 QPointF const &ConnectionGraphicsObject::endPoint(PortType portType) const
 {
     Q_ASSERT(portType != PortType::None);
-
     return (portType == PortType::Out ? _out : _in);
 }
 
 void ConnectionGraphicsObject::setEndPoint(PortType portType, QPointF const &point)
 {
-    if (portType == PortType::In)
+    if (portType == PortType::In) {
         _in = point;
-    else
+    } else {
         _out = point;
+    }
 }
 
 void ConnectionGraphicsObject::move()
 {
     auto moveEnd = [this](ConnectionId cId, PortType portType) {
-        NodeId nodeId = getNodeId(portType, cId);
+        const NodeId nodeId = getNodeId(portType, cId);
 
-        if (nodeId == InvalidNodeId)
+        if (nodeId == InvalidNodeId) {
             return;
+        }
 
-        NodeGraphicsObject *ngo = nodeScene()->nodeGraphicsObject(nodeId);
+        const NodeGraphicsObject *ngo = nodeScene()->nodeGraphicsObject(nodeId);
 
         if (ngo) {
-            AbstractNodeGeometry &geometry = nodeScene()->nodeGeometry();
-
-            QPointF scenePos = geometry.portScenePosition(nodeId,
-                                                          portType,
-                                                          getPortIndex(portType, cId),
-                                                          ngo->sceneTransform());
-
-            QPointF connectionPos = sceneTransform().inverted().map(scenePos);
-
+            const AbstractNodeGeometry &geometry = nodeScene()->nodeGeometry();
+            const QPointF scenePos = geometry.portScenePosition(nodeId,
+                                                                portType,
+                                                                getPortIndex(portType, cId),
+                                                                ngo->sceneTransform());
+            const QPointF connectionPos = sceneTransform().inverted().map(scenePos);
             setEndPoint(portType, connectionPos);
         }
     };
@@ -193,8 +186,9 @@ void ConnectionGraphicsObject::paint(QPainter *painter,
                                      QStyleOptionGraphicsItem const *option,
                                      QWidget *)
 {
-    if (!scene())
+    if (!scene()) {
         return;
+    }
 
     painter->setClipRect(option->exposedRect);
 
@@ -210,11 +204,10 @@ void ConnectionGraphicsObject::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     prepareGeometryChange();
 
-    auto view = static_cast<QGraphicsView *>(event->widget());
-    auto ngo = locateNodeAt(event->scenePos(), *nodeScene(), view->transform());
+    const auto view = static_cast<QGraphicsView *>(event->widget());
+    const auto ngo = locateNodeAt(event->scenePos(), *nodeScene(), view->transform());
     if (ngo) {
         ngo->reactToConnection(this);
-
         _connectionState.setLastHoveredNode(ngo->nodeId());
     } else {
         _connectionState.resetLastHoveredNode();
@@ -222,7 +215,7 @@ void ConnectionGraphicsObject::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
     //-------------------
 
-    auto requiredPort = _connectionState.requiredPort();
+    const auto requiredPort = _connectionState.requiredPort();
 
     if (requiredPort != PortType::None) {
         setEndPoint(requiredPort, event->pos());
@@ -231,28 +224,21 @@ void ConnectionGraphicsObject::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     //-------------------
 
     update();
-
     event->accept();
 }
 
 void ConnectionGraphicsObject::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     QGraphicsItem::mouseReleaseEvent(event);
-
     ungrabMouse();
     event->accept();
-
     auto view = static_cast<QGraphicsView *>(event->widget());
-
     Q_ASSERT(view);
-
-    auto ngo = locateNodeAt(event->scenePos(), *nodeScene(), view->transform());
-
+    const auto ngo = locateNodeAt(event->scenePos(), *nodeScene(), view->transform());
     bool wasConnected = false;
 
     if (ngo) {
         NodeConnectionInteraction interaction(*ngo, *this, *nodeScene());
-
         wasConnected = interaction.tryConnect();
     }
 
@@ -304,7 +290,7 @@ std::pair<QPointF, QPointF> ConnectionGraphicsObject::pointsC1C2() const
 
 void ConnectionGraphicsObject::addGraphicsEffect()
 {
-    auto effect = new QGraphicsBlurEffect;
+    const auto effect = new QGraphicsBlurEffect;
 
     effect->setBlurRadius(5);
     setGraphicsEffect(effect);
@@ -317,63 +303,45 @@ void ConnectionGraphicsObject::addGraphicsEffect()
 
 std::pair<QPointF, QPointF> ConnectionGraphicsObject::pointsC1C2Horizontal() const
 {
-    double const defaultOffset = 200;
-
-    double xDistance = _in.x() - _out.x();
-
+    constexpr double defaultOffset = 200;
+    const double xDistance = _in.x() - _out.x();
     double horizontalOffset = qMin(defaultOffset, std::abs(xDistance));
-
     double verticalOffset = 0;
-
     double ratioX = 0.5;
 
     if (xDistance <= 0) {
-        double yDistance = _in.y() - _out.y() + 20;
-
-        double vector = yDistance < 0 ? -1.0 : 1.0;
-
+        const double yDistance = _in.y() - _out.y() + 20;
+        const double vector = yDistance < 0 ? -1.0 : 1.0;
         verticalOffset = qMin(defaultOffset, std::abs(yDistance)) * vector;
-
         ratioX = 1.0;
     }
 
     horizontalOffset *= ratioX;
 
-    QPointF c1(_out.x() + horizontalOffset, _out.y() + verticalOffset);
-
-    QPointF c2(_in.x() - horizontalOffset, _in.y() - verticalOffset);
-
+    const QPointF c1(_out.x() + horizontalOffset, _out.y() + verticalOffset);
+    const QPointF c2(_in.x() - horizontalOffset, _in.y() - verticalOffset);
     return std::make_pair(c1, c2);
 }
 
 std::pair<QPointF, QPointF> ConnectionGraphicsObject::pointsC1C2Vertical() const
 {
-    double const defaultOffset = 200;
-
-    double yDistance = _in.y() - _out.y();
-
+    constexpr double defaultOffset = 200;
+    const double yDistance = _in.y() - _out.y();
     double verticalOffset = qMin(defaultOffset, std::abs(yDistance));
-
     double horizontalOffset = 0;
-
     double ratioY = 0.5;
 
     if (yDistance <= 0) {
-        double xDistance = _in.x() - _out.x() + 20;
-
-        double vector = xDistance < 0 ? -1.0 : 1.0;
-
+        const double xDistance = _in.x() - _out.x() + 20;
+        const double vector = xDistance < 0 ? -1.0 : 1.0;
         horizontalOffset = qMin(defaultOffset, std::abs(xDistance)) * vector;
-
         ratioY = 1.0;
     }
 
     verticalOffset *= ratioY;
 
-    QPointF c1(_out.x() + horizontalOffset, _out.y() + verticalOffset);
-
-    QPointF c2(_in.x() - horizontalOffset, _in.y() - verticalOffset);
-
+    const QPointF c1(_out.x() + horizontalOffset, _out.y() + verticalOffset);
+    const QPointF c2(_in.x() - horizontalOffset, _in.y() - verticalOffset);
     return std::make_pair(c1, c2);
 }
 

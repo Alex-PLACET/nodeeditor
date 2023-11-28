@@ -17,17 +17,12 @@ AbstractNodeGeometry::AbstractNodeGeometry(AbstractGraphModel &graphModel)
 
 QRectF AbstractNodeGeometry::boundingRect(NodeId const nodeId) const
 {
-    QSize s = size(nodeId);
-
-    double ratio = 0.05;
-
-    int widthMargin = s.width() * ratio;
-    int heightMargin = s.height() * ratio;
-
-    QMargins margins(widthMargin, heightMargin, widthMargin, heightMargin);
-
-    QRectF r(QPointF(0, 0), s);
-
+    const QSize s = size(nodeId);
+    constexpr double ratio = 0.05;
+    const int widthMargin = s.width() * ratio;
+    const int heightMargin = s.height() * ratio;
+    const QMargins margins(widthMargin, heightMargin, widthMargin, heightMargin);
+    const QRectF r(QPointF(0, 0), s);
     return r.marginsAdded(margins);
 }
 
@@ -36,8 +31,7 @@ QPointF AbstractNodeGeometry::portScenePosition(NodeId const nodeId,
                                                 PortIndex const index,
                                                 QTransform const &t) const
 {
-    QPointF result = portPosition(nodeId, portType, index);
-
+    const QPointF result = portPosition(nodeId, portType, index);
     return t.map(result);
 }
 
@@ -45,26 +39,23 @@ PortIndex AbstractNodeGeometry::checkPortHit(NodeId const nodeId,
                                              PortType const portType,
                                              QPointF const nodePoint) const
 {
-    auto const &nodeStyle = StyleCollection::nodeStyle();
-
+    const auto &nodeStyle = StyleCollection::nodeStyle();
     PortIndex result = InvalidPortIndex;
 
-    if (portType == PortType::None)
+    if (portType == PortType::None) {
         return result;
+    }
 
-    double const tolerance = 2.0 * nodeStyle.ConnectionPointDiameter;
-
-    size_t const n = _graphModel.nodeData<unsigned int>(nodeId,
+    const double tolerance = 2.0 * nodeStyle.ConnectionPointDiameter;
+    const size_t n = _graphModel.nodeData<unsigned int>(nodeId,
                                                         (portType == PortType::Out)
                                                             ? NodeRole::OutPortCount
                                                             : NodeRole::InPortCount);
 
     for (unsigned int portIndex = 0; portIndex < n; ++portIndex) {
-        auto pp = portPosition(nodeId, portType, portIndex);
-
-        QPointF p = pp - nodePoint;
-        auto distance = std::sqrt(QPointF::dotProduct(p, p));
-
+        const auto pp = portPosition(nodeId, portType, portIndex);
+        const QPointF p = pp - nodePoint;
+        const auto distance = std::sqrt(QPointF::dotProduct(p, p));
         if (distance < tolerance) {
             result = portIndex;
             break;

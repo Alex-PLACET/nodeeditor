@@ -15,7 +15,6 @@ namespace QtNodes {
         QFont f;
         f.setBold(true);
         _boldFontMetrics = QFontMetrics(f);
-
         _portSize = _fontMetrics.height() + 10;
     }
 
@@ -30,10 +29,8 @@ namespace QtNodes {
             height = std::max(height, static_cast<unsigned int>(w->height()));
         }
 
-        QRectF const capRect = captionRect(nodeId);
-
+        const QRectF capRect = captionRect(nodeId);
         height += capRect.height();
-
         height += _portSpasing; // space above caption
         height += _portSpasing; // space below caption
 
@@ -44,9 +41,7 @@ namespace QtNodes {
         }
 
         width = std::max(width, static_cast<unsigned int>(capRect.width()) + 2 * _portSpasing);
-
-        QSize size(width, height);
-
+        const QSize size(width, height);
         _graphModel.setNodeData(nodeId, NodeRole::Size, size);
     }
 
@@ -56,38 +51,38 @@ namespace QtNodes {
         unsigned int const step = _portSize + _portSpasing;
 
         QPointF result;
-        QSize size = _graphModel.nodeData<QSize>(nodeId, NodeRole::Size);
-
-        uint maxPorts = _graphModel.nodeData(nodeId, (portType == PortType::Out) ? NodeRole::OutPortCount
-                                                                                 : NodeRole::InPortCount).toUInt();
+        const QSize size = _graphModel.nodeData<QSize>(nodeId, NodeRole::Size);
+        const uint maxPorts = _graphModel
+                                  .nodeData(nodeId,
+                                            (portType == PortType::Out) ? NodeRole::OutPortCount
+                                                                        : NodeRole::InPortCount)
+                                  .toUInt();
 
         switch (portType) {
             case PortType::In: {
-                double x = 0.0;
-
-                double totalHeight = size.height();
-                totalHeight -= _portSpasing;
-                totalHeight -= _portSize / 4.0;
-                totalHeight -= step * (maxPorts - portIndex - 1);
-                totalHeight -= step / 2.0;
-
-                result = QPointF(x, totalHeight);
-                break;
+            constexpr double x = 0.0;
+            double totalHeight = size.height();
+            totalHeight -= _portSpasing;
+            totalHeight -= _portSize / 4.0;
+            totalHeight -= step * (maxPorts - portIndex - 1);
+            totalHeight -= step / 2.0;
+            result = QPointF(x, totalHeight);
+            break;
             }
 
             case PortType::Out: {
-                double x = size.width();
+            const double x = size.width();
 
-                double totalHeight = 0.0;
-                totalHeight += captionRect(nodeId).height();
-                totalHeight += _portSpasing;
+            double totalHeight = 0.0;
+            totalHeight += captionRect(nodeId).height();
+            totalHeight += _portSpasing;
 
-                totalHeight += _portSize / 4.0;
-                totalHeight += step * portIndex;
-                totalHeight += step / 2.0;
+            totalHeight += _portSize / 4.0;
+            totalHeight += step * portIndex;
+            totalHeight += step / 2.0;
 
-                result = QPointF(x, totalHeight);
-                break;
+            result = QPointF(x, totalHeight);
+            break;
             }
 
             default:
@@ -101,13 +96,10 @@ namespace QtNodes {
                                                            PortType const portType,
                                                            PortIndex const portIndex) const {
         QPointF p = portPosition(nodeId, portType, portIndex);
-
-        QRectF rect = portTextRect(nodeId, portType, portIndex);
-
+        const QRectF rect = portTextRect(nodeId, portType, portIndex);
         p.setY(p.y() + rect.height() / 4.0);
 
-        QSize size = _graphModel.nodeData<QSize>(nodeId, NodeRole::Size);
-
+        const QSize size = _graphModel.nodeData<QSize>(nodeId, NodeRole::Size);
         switch (portType) {
             case PortType::In:
                 p.setX(_portSpasing);
@@ -125,24 +117,23 @@ namespace QtNodes {
     }
 
     QRectF WidgetHorizontalNodeGeometry::captionRect(NodeId const nodeId) const {
-        if (!_graphModel.nodeData<bool>(nodeId, NodeRole::CaptionVisible))
-            return QRect();
-
-        QString name = _graphModel.nodeData<QString>(nodeId, NodeRole::Caption);
-
+        if (!_graphModel.nodeData<bool>(nodeId, NodeRole::CaptionVisible)) {
+                return QRect();
+        }
+        const QString name = _graphModel.nodeData<QString>(nodeId, NodeRole::Caption);
         return _boldFontMetrics.boundingRect(name);
     }
 
     QPointF WidgetHorizontalNodeGeometry::captionPosition(NodeId const nodeId) const {
-        QSize size = _graphModel.nodeData<QSize>(nodeId, NodeRole::Size);
+        const QSize size = _graphModel.nodeData<QSize>(nodeId, NodeRole::Size);
         return QPointF(0.5 * (size.width() - captionRect(nodeId).width()),
                        0.5 * _portSpasing + captionRect(nodeId).height());
     }
 
     QPointF WidgetHorizontalNodeGeometry::widgetPosition(NodeId const nodeId) const {
-        QSize size = _graphModel.nodeData<QSize>(nodeId, NodeRole::Size);
+        const QSize size = _graphModel.nodeData<QSize>(nodeId, NodeRole::Size);
 
-        unsigned int captionHeight = captionRect(nodeId).height();
+        const unsigned int captionHeight = captionRect(nodeId).height();
 
         if (auto w = _graphModel.nodeData<QWidget *>(nodeId, NodeRole::Widget)) {
             // If the widget wants to use as much vertical space as possible,
@@ -159,10 +150,8 @@ namespace QtNodes {
     }
 
     QRect WidgetHorizontalNodeGeometry::resizeHandleRect(NodeId const nodeId) const {
-        QSize size = _graphModel.nodeData<QSize>(nodeId, NodeRole::Size);
-
-        unsigned int rectSize = 7;
-
+        const QSize size = _graphModel.nodeData<QSize>(nodeId, NodeRole::Size);
+        constexpr unsigned int rectSize = 7;
         return QRect(size.width() - _portSpasing, size.height() - _portSpasing, rectSize, rectSize);
     }
 
@@ -182,12 +171,10 @@ namespace QtNodes {
     }
 
     unsigned int WidgetHorizontalNodeGeometry::maxVerticalPortsExtent(NodeId const nodeId) const {
-        PortCount nInPorts = _graphModel.nodeData<PortCount>(nodeId, NodeRole::InPortCount);
-
-        PortCount nOutPorts = _graphModel.nodeData<PortCount>(nodeId, NodeRole::OutPortCount);
-
-        unsigned int maxNumOfEntries = std::max(nInPorts, nOutPorts);
-        unsigned int step = _portSize + _portSpasing;
+        const PortCount nInPorts = _graphModel.nodeData<PortCount>(nodeId, NodeRole::InPortCount);
+        const PortCount nOutPorts = _graphModel.nodeData<PortCount>(nodeId, NodeRole::OutPortCount);
+        const unsigned int maxNumOfEntries = std::max(nInPorts, nOutPorts);
+        const unsigned int step = _portSize + _portSpasing;
         return step * maxNumOfEntries;
     }
 
@@ -195,11 +182,11 @@ namespace QtNodes {
                                                                    PortType const portType) const {
         unsigned int width = 0;
 
-        size_t const n = _graphModel
-                .nodeData(nodeId,
-                          (portType == PortType::Out) ? NodeRole::OutPortCount
-                                                      : NodeRole::InPortCount)
-                .toUInt();
+        const size_t n = _graphModel
+                             .nodeData(nodeId,
+                                       (portType == PortType::Out) ? NodeRole::OutPortCount
+                                                                   : NodeRole::InPortCount)
+                             .toUInt();
 
         for (PortIndex portIndex = 0ul; portIndex < n; ++portIndex) {
             QString name;
@@ -207,10 +194,10 @@ namespace QtNodes {
             if (_graphModel.portData<bool>(nodeId, portType, portIndex, PortRole::CaptionVisible)) {
                 name = _graphModel.portData<QString>(nodeId, portType, portIndex, PortRole::Caption);
             } else {
-                NodeDataType portData = _graphModel.portData<NodeDataType>(nodeId,
-                                                                           portType,
-                                                                           portIndex,
-                                                                           PortRole::DataType);
+                const NodeDataType portData = _graphModel.portData<NodeDataType>(nodeId,
+                                                                                 portType,
+                                                                                 portIndex,
+                                                                                 PortRole::DataType);
 
                 name = portData.name;
             }

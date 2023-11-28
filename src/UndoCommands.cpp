@@ -30,7 +30,6 @@ static QJsonObject serializeSelectedItems(BasicGraphicsScene *scene)
     for (QGraphicsItem *item : scene->selectedItems()) {
         if (auto n = qgraphicsitem_cast<NodeGraphicsObject *>(item)) {
             nodesJsonArray.append(graphModel.saveNode(n->nodeId()));
-
             selectedNodes.insert(n->nodeId());
         }
     }
@@ -40,7 +39,6 @@ static QJsonObject serializeSelectedItems(BasicGraphicsScene *scene)
     for (QGraphicsItem *item : scene->selectedItems()) {
         if (auto c = qgraphicsitem_cast<ConnectionGraphicsObject *>(item)) {
             auto const &cid = c->connectionId();
-
             if (selectedNodes.count(cid.outNodeId) > 0 && selectedNodes.count(cid.inNodeId) > 0) {
                 connJsonArray.append(toJson(cid));
             }
@@ -56,15 +54,12 @@ static QJsonObject serializeSelectedItems(BasicGraphicsScene *scene)
 static void insertSerializedItems(QJsonObject const &json, BasicGraphicsScene *scene)
 {
     AbstractGraphModel &graphModel = scene->graphModel();
-
     QJsonArray const &nodesJsonArray = json["nodes"].toArray();
 
     for (QJsonValue node : nodesJsonArray) {
         QJsonObject obj = node.toObject();
-
         graphModel.loadNode(obj);
-
-        auto id = obj["id"].toInt();
+        const auto id = obj["id"].toInt();
         scene->nodeGraphicsObject(id)->setZValue(1.0);
         scene->nodeGraphicsObject(id)->setSelected(true);
     }
@@ -72,13 +67,10 @@ static void insertSerializedItems(QJsonObject const &json, BasicGraphicsScene *s
     QJsonArray const &connJsonArray = json["connections"].toArray();
 
     for (QJsonValue connection : connJsonArray) {
-        QJsonObject connJson = connection.toObject();
-
-        ConnectionId connId = fromJson(connJson);
-
+        const QJsonObject connJson = connection.toObject();
+        const ConnectionId connId = fromJson(connJson);
         // Restore the connection
         graphModel.addConnection(connId);
-
         scene->connectionGraphicsObject(connId)->setSelected(true);
     }
 }
@@ -88,17 +80,15 @@ static void deleteSerializedItems(QJsonObject &sceneJson, AbstractGraphModel &gr
     QJsonArray connectionJsonArray = sceneJson["connections"].toArray();
 
     for (QJsonValueRef connection : connectionJsonArray) {
-        QJsonObject connJson = connection.toObject();
-
-        ConnectionId connId = fromJson(connJson);
-
+        const QJsonObject connJson = connection.toObject();
+        const ConnectionId connId = fromJson(connJson);
         graphModel.deleteConnection(connId);
     }
 
     QJsonArray nodesJsonArray = sceneJson["nodes"].toArray();
 
     for (QJsonValueRef node : nodesJsonArray) {
-        QJsonObject nodeJson = node.toObject();
+        const QJsonObject nodeJson = node.toObject();
         graphModel.deleteNode(nodeJson["id"].toInt());
     }
 }
@@ -131,7 +121,7 @@ CreateCommand::CreateCommand(BasicGraphicsScene *scene,
 {
     _nodeId = _scene->graphModel().addNode(name);
     if (_nodeId != InvalidNodeId) {
-        auto rect = scene->nodeGeometry().size(_nodeId);
+        const auto rect = scene->nodeGeometry().size(_nodeId);
         QPointF posView = {mouseScenePos.x() - rect.width() / 2, mouseScenePos.y() - 10};
         _scene->graphModel().setNodeData(_nodeId, NodeRole::Position, posView);
     } else {
@@ -144,14 +134,14 @@ void CreateCommand::undo()
     QJsonArray nodesJsonArray;
     nodesJsonArray.append(_scene->graphModel().saveNode(_nodeId));
     _sceneJson["nodes"] = nodesJsonArray;
-
     _scene->graphModel().deleteNode(_nodeId);
 }
 
 void CreateCommand::redo()
 {
-    if (_sceneJson.empty() || _sceneJson["nodes"].toArray().empty())
+    if (_sceneJson.empty() || _sceneJson["nodes"].toArray().empty()) {
         return;
+    }
 
     insertSerializedItems(_sceneJson, _scene);
 }
@@ -174,7 +164,6 @@ DeleteCommand::DeleteCommand(BasicGraphicsScene *scene)
     for (QGraphicsItem *item : _scene->selectedItems()) {
         if (auto c = qgraphicsitem_cast<ConnectionGraphicsObject *>(item)) {
             auto const &cid = c->connectionId();
-
             connJsonArray.append(toJson(cid));
         }
     }

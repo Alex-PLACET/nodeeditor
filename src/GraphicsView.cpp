@@ -44,7 +44,7 @@ GraphicsView::GraphicsView(QWidget *parent)
 
     // Sets the scene rect to its maximum possible ranges to avoid autu scene range
     // re-calculation when expanding the all QGraphicsItems common rect.
-    int maxSize = 32767;
+    constexpr int maxSize = 32767;
     setSceneRect(-maxSize, -maxSize, (maxSize * 2), (maxSize * 2));
 }
 
@@ -69,9 +69,7 @@ void GraphicsView::setScene(BasicGraphicsScene *scene) {
         delete _clearSelectionAction;
         _clearSelectionAction = new QAction(QStringLiteral("Clear Selection"), this);
         _clearSelectionAction->setShortcut(Qt::Key_Escape);
-
         connect(_clearSelectionAction, &QAction::triggered, scene, &QGraphicsScene::clearSelection);
-
         addAction(_clearSelectionAction);
     }
 
@@ -136,13 +134,10 @@ void GraphicsView::setScene(BasicGraphicsScene *scene) {
 void GraphicsView::centerScene() {
     if (scene()) {
         scene()->setSceneRect(QRectF());
-
-        QRectF sceneRect = scene()->sceneRect();
-
+        const QRectF sceneRect = scene()->sceneRect();
         if (sceneRect.width() > this->rect().width() || sceneRect.height() > this->rect().height()) {
             fitInView(sceneRect, Qt::KeepAspectRatio);
         }
-
         centerOn(sceneRect.center());
     }
 }
@@ -152,30 +147,25 @@ void GraphicsView::contextMenuEvent(QContextMenuEvent *event) {
         QGraphicsView::contextMenuEvent(event);
         return;
     }
-
-    auto const scenePos = mapToScene(event->pos());
-
+    const auto scenePos = mapToScene(event->pos());
     QMenu *menu = nodeScene()->createSceneMenu(scenePos);
-
     if (menu) {
         menu->exec(event->globalPos());
     }
 }
 
 void GraphicsView::wheelEvent(QWheelEvent *event) {
-    QPoint delta = event->angleDelta();
-
+    const QPoint delta = event->angleDelta();
     if (delta.y() == 0) {
         event->ignore();
         return;
     }
-
-    double const d = delta.y() / std::abs(delta.y());
-
-    if (d > 0.0)
+    const double d = delta.y() / std::abs(delta.y());
+    if (d > 0.0) {
         scaleUp();
-    else
+    } else {
         scaleDown();
+    }
 }
 
 double GraphicsView::getScale() const {
@@ -183,13 +173,12 @@ double GraphicsView::getScale() const {
 }
 
 void GraphicsView::setScaleRange(double minimum, double maximum) {
-    if (maximum < minimum)
+    if (maximum < minimum) {
         std::swap(minimum, maximum);
+    }
     minimum = std::max(0.0, minimum);
     maximum = std::max(0.0, maximum);
-
     _scaleRange = {minimum, maximum};
-
     setupScale(transform().m11());
 }
 
@@ -198,8 +187,8 @@ void GraphicsView::setScaleRange(ScaleRange range) {
 }
 
 void GraphicsView::scaleUp() {
-    double const step = 1.2;
-    double const factor = std::pow(step, 1.0);
+    constexpr double step = 1.2;
+    const double factor = std::pow(step, 1.0);
 
     if (_scaleRange.maximum > 0) {
         QTransform t = transform();
@@ -215,8 +204,8 @@ void GraphicsView::scaleUp() {
 }
 
 void GraphicsView::scaleDown() {
-    double const step = 1.2;
-    double const factor = std::pow(step, -1.0);
+    constexpr double step = 1.2;
+    const double factor = std::pow(step, -1.0);
 
     if (_scaleRange.minimum > 0) {
         QTransform t = transform();
@@ -234,11 +223,13 @@ void GraphicsView::scaleDown() {
 void GraphicsView::setupScale(double scale) {
     scale = std::max(_scaleRange.minimum, std::min(_scaleRange.maximum, scale));
 
-    if (scale <= 0)
+    if (scale <= 0) {
         return;
+    }
 
-    if (scale == transform().m11())
+    if (scale == transform().m11()) {
         return;
+    }
 
     QTransform matrix;
     matrix.scale(scale, scale);
@@ -252,8 +243,7 @@ void GraphicsView::onDeleteSelectedObjects() {
 }
 
 void GraphicsView::onDuplicateSelectedObjects() {
-    QPointF const pastePosition = scenePastePosition();
-
+    const QPointF pastePosition = scenePastePosition();
     nodeScene()->undoStack().push(new CopyCommand(nodeScene()));
     nodeScene()->undoStack().push(new PasteCommand(nodeScene(), pastePosition));
 }
@@ -263,7 +253,7 @@ void GraphicsView::onCopySelectedObjects() {
 }
 
 void GraphicsView::onPasteObjects() {
-    QPointF const pastePosition = scenePastePosition();
+    const QPointF pastePosition = scenePastePosition();
     nodeScene()->undoStack().push(new PasteCommand(nodeScene(), pastePosition));
 }
 
@@ -272,7 +262,6 @@ void GraphicsView::keyPressEvent(QKeyEvent *event) {
         case Qt::Key_Shift:
             setDragMode(QGraphicsView::RubberBandDrag);
             break;
-
         default:
             break;
     }
@@ -285,7 +274,6 @@ void GraphicsView::keyReleaseEvent(QKeyEvent *event) {
         case Qt::Key_Shift:
             setDragMode(QGraphicsView::ScrollHandDrag);
             break;
-
         default:
             break;
     }
@@ -315,36 +303,35 @@ void GraphicsView::drawBackground(QPainter *painter, const QRectF &r) {
     QGraphicsView::drawBackground(painter, r);
 
     auto drawGrid = [&](double gridStep) {
-        QRect windowRect = rect();
-        QPointF tl = mapToScene(windowRect.topLeft());
-        QPointF br = mapToScene(windowRect.bottomRight());
+        const QRect windowRect = rect();
+        const QPointF tl = mapToScene(windowRect.topLeft());
+        const QPointF br = mapToScene(windowRect.bottomRight());
 
-        double left = std::floor(tl.x() / gridStep - 0.5);
-        double right = std::floor(br.x() / gridStep + 1.0);
-        double bottom = std::floor(tl.y() / gridStep - 0.5);
-        double top = std::floor(br.y() / gridStep + 1.0);
+        const double left = std::floor(tl.x() / gridStep - 0.5);
+        const double right = std::floor(br.x() / gridStep + 1.0);
+        const double bottom = std::floor(tl.y() / gridStep - 0.5);
+        const double top = std::floor(br.y() / gridStep + 1.0);
 
         // vertical lines
         for (int xi = int(left); xi <= int(right); ++xi) {
-            QLineF line(xi * gridStep, bottom * gridStep, xi * gridStep, top * gridStep);
+            const QLineF line(xi * gridStep, bottom * gridStep, xi * gridStep, top * gridStep);
 
             painter->drawLine(line);
         }
 
         // horizontal lines
         for (int yi = int(bottom); yi <= int(top); ++yi) {
-            QLineF line(left * gridStep, yi * gridStep, right * gridStep, yi * gridStep);
+            const QLineF line(left * gridStep, yi * gridStep, right * gridStep, yi * gridStep);
             painter->drawLine(line);
         }
     };
 
-
-    QPen pfine(palette().color(QPalette::Disabled, QPalette::AlternateBase), 1.0);
+    const QPen pfine(palette().color(QPalette::Disabled, QPalette::AlternateBase), 1.0);
 
     painter->setPen(pfine);
     drawGrid(15);
 
-    QPen p(palette().color(QPalette::Disabled, QPalette::Window), 1.0);
+    const QPen p(palette().color(QPalette::Disabled, QPalette::Window), 1.0);
 
     painter->setPen(p);
     drawGrid(150);
@@ -352,7 +339,6 @@ void GraphicsView::drawBackground(QPainter *painter, const QRectF &r) {
 
 void GraphicsView::showEvent(QShowEvent *event) {
     QGraphicsView::showEvent(event);
-
     centerScene();
 }
 
@@ -362,10 +348,9 @@ BasicGraphicsScene *GraphicsView::nodeScene() {
 
 QPointF GraphicsView::scenePastePosition() {
     QPoint origin = mapFromGlobal(QCursor::pos());
-
-    QRect const viewRect = rect();
-    if (!viewRect.contains(origin))
+    const QRect viewRect = rect();
+    if (!viewRect.contains(origin)) {
         origin = viewRect.center();
-
+    }
     return mapToScene(origin);
 }

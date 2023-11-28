@@ -12,35 +12,28 @@
 namespace QtNodes {
 
     static QPainterPath cubicPath(ConnectionGraphicsObject const &connection) {
-        QPointF const &in = connection.endPoint(PortType::In);
-        QPointF const &out = connection.endPoint(PortType::Out);
-
-        auto const c1c2 = connection.pointsC1C2();
-
+        const QPointF &in = connection.endPoint(PortType::In);
+        const QPointF &out = connection.endPoint(PortType::Out);
+        const auto c1c2 = connection.pointsC1C2();
         // cubic spline
         QPainterPath cubic(out);
-
         cubic.cubicTo(c1c2.first, c1c2.second, in);
-
         return cubic;
     }
 
     QPainterPath ConnectionPainter::getPainterStroke(ConnectionGraphicsObject const &connection) {
-        auto cubic = cubicPath(connection);
-
-        QPointF const &out = connection.endPoint(PortType::Out);
+        const auto cubic = cubicPath(connection);
+        const QPointF &out = connection.endPoint(PortType::Out);
         QPainterPath result(out);
+        constexpr unsigned long segments = 20;
 
-        unsigned segments = 20;
-
-        for (auto i = 0ul; i < segments; ++i) {
-            double ratio = double(i + 1) / segments;
+        for (auto i = 0UL; i < segments; ++i) {
+            const double ratio = static_cast<double>(i + 1) / segments;
             result.lineTo(cubic.pointAtPercent(ratio));
         }
 
         QPainterPathStroker stroker;
         stroker.setWidth(10.0);
-
         return stroker.createStroke(result);
     }
 
@@ -80,32 +73,27 @@ namespace QtNodes {
         ConnectionState const &state = cgo.connectionState();
 
         if (state.requiresPort()) {
-            auto const &connectionStyle = QtNodes::StyleCollection::connectionStyle();
-
+            const auto &connectionStyle = QtNodes::StyleCollection::connectionStyle();
             QPen pen;
             pen.setWidth(connectionStyle.constructionLineWidth());
             pen.setColor(connectionStyle.constructionColor());
             pen.setStyle(Qt::DashLine);
-
             painter->setPen(pen);
             painter->setBrush(Qt::NoBrush);
-
-            auto cubic = cubicPath(cgo);
-
+            const auto cubic = cubicPath(cgo);
             // cubic spline
             painter->drawPath(cubic);
         }
     }
 
     static void drawHoveredOrSelected(QPainter *painter, ConnectionGraphicsObject const &cgo) {
-        bool const hovered = cgo.connectionState().hovered();
-        bool const selected = cgo.isSelected();
+        const bool hovered = cgo.connectionState().hovered();
+        const bool selected = cgo.isSelected();
 
         // drawn as a fat background
         if (hovered || selected) {
-            auto const &connectionStyle = QtNodes::StyleCollection::connectionStyle();
-
-            double const lineWidth = connectionStyle.lineWidth();
+            const auto &connectionStyle = QtNodes::StyleCollection::connectionStyle();
+            const double lineWidth = connectionStyle.lineWidth();
 
             QPen pen;
             pen.setWidth(2 * lineWidth);
@@ -116,7 +104,7 @@ namespace QtNodes {
             painter->setBrush(Qt::NoBrush);
 
             // cubic spline
-            auto const cubic = cubicPath(cgo);
+            const auto cubic = cubicPath(cgo);
             painter->drawPath(cubic);
         }
     }
@@ -141,53 +129,48 @@ namespace QtNodes {
 
         if (connectionStyle.useDataDefinedColors()) {
             using QtNodes::PortType;
-
-            auto const cId = cgo.connectionId();
-
-            auto dataTypeOut = graphModel
-                    .portData(cId.outNodeId,
-                              PortType::Out,
-                              cId.outPortIndex,
-                              PortRole::DataType)
-                    .value<NodeDataType>();
-
-            auto dataTypeIn
-                    = graphModel.portData(cId.inNodeId, PortType::In, cId.inPortIndex, PortRole::DataType)
-                            .value<NodeDataType>();
-
+            const auto cId = cgo.connectionId();
+            const auto dataTypeOut = graphModel
+                                         .portData(cId.outNodeId,
+                                                   PortType::Out,
+                                                   cId.outPortIndex,
+                                                   PortRole::DataType)
+                                         .value<NodeDataType>();
+            const auto dataTypeIn = graphModel
+                                        .portData(cId.inNodeId,
+                                                  PortType::In,
+                                                  cId.inPortIndex,
+                                                  PortRole::DataType)
+                                        .value<NodeDataType>();
 
             normalColorOut = dataTypeOut.color;
             normalColorIn = dataTypeIn.color;
-
             useGradientColor = (normalColorOut != normalColorIn);
             selectedColor = normalColorOut.darker(200);
         }
 
         // geometry
 
-        double const lineWidth = connectionStyle.lineWidth();
+        const double lineWidth = connectionStyle.lineWidth();
 
         // draw normal line
         QPen p;
-
         p.setWidth(lineWidth);
 
-        bool const selected = cgo.isSelected();
+        const bool selected = cgo.isSelected();
 
-        auto cubic = cubicPath(cgo);
+        const auto cubic = cubicPath(cgo);
         if (useGradientColor) {
             p.setColor(normalColorOut);
-
             if (selected) {
                 p.setColor(selectedColor);
             }
             QPainterPathStroker stroker;
             stroker.setWidth(p.width());
-            QPainterPath outline = stroker.createStroke(cubic);
+            const QPainterPath outline = stroker.createStroke(cubic);
             QLinearGradient gradient(outline.boundingRect().topLeft(), outline.boundingRect().bottomRight());
             gradient.setColorAt(0, normalColorOut);
             gradient.setColorAt(1, normalColorIn);
-
             painter->setPen(Qt::NoPen);
             painter->setBrush(gradient);
             painter->drawPath(outline);
@@ -197,10 +180,8 @@ namespace QtNodes {
             if (selected) {
                 p.setColor(selectedColor);
             }
-
             painter->setPen(p);
             painter->setBrush(Qt::NoBrush);
-
             painter->drawPath(cubic);
         }
     }

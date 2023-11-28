@@ -39,8 +39,7 @@ NodeStyle::NodeStyle(QJsonObject const &json)
 
 void NodeStyle::setNodeStyle(QString jsonText)
 {
-    NodeStyle style(jsonText);
-
+    const NodeStyle style(jsonText);
     StyleCollection::setNodeStyle(style);
 }
 

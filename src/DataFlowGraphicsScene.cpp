@@ -41,14 +41,13 @@ DataFlowGraphicsScene::DataFlowGraphicsScene(DataFlowGraphModel &graphModel, QOb
 
 std::vector<NodeId> DataFlowGraphicsScene::selectedNodes() const
 {
-    QList<QGraphicsItem *> graphicsItems = selectedItems();
+    const QList<QGraphicsItem *> graphicsItems = selectedItems();
 
     std::vector<NodeId> result;
     result.reserve(graphicsItems.size());
 
     for (QGraphicsItem *item : graphicsItems) {
-        auto ngo = qgraphicsitem_cast<NodeGraphicsObject *>(item);
-
+        const auto ngo = qgraphicsitem_cast<NodeGraphicsObject *>(item);
         if (ngo != nullptr) {
             result.push_back(ngo->nodeId());
         }
@@ -82,7 +81,7 @@ QMenu *DataFlowGraphicsScene::createSceneMenu(QPointF const scenePos)
     // 2.
     modelMenu->addAction(treeViewAction);
 
-    auto registry = _graphModel.dataModelRegistry();
+    const auto registry = _graphModel.dataModelRegistry();
 
     for (auto const &cat : registry->categories()) {
         auto item = new QTreeWidgetItem(treeView);
@@ -91,11 +90,10 @@ QMenu *DataFlowGraphicsScene::createSceneMenu(QPointF const scenePos)
     }
 
     for (auto const &assoc : registry->registeredModelsCategoryAssociation()) {
-        QList<QTreeWidgetItem *> parent = treeView->findItems(assoc.second, Qt::MatchExactly);
-
-        if (parent.count() <= 0)
+        const QList<QTreeWidgetItem *> parent = treeView->findItems(assoc.second, Qt::MatchExactly);
+        if (parent.count() <= 0) {
             continue;
-
+        }
         auto item = new QTreeWidgetItem(parent.first());
         item->setText(0, assoc.first);
     }
@@ -117,11 +115,12 @@ QMenu *DataFlowGraphicsScene::createSceneMenu(QPointF const scenePos)
     //Setup filtering
     connect(txtBox, &QLineEdit::textChanged, [treeView](const QString &text) {
         QTreeWidgetItemIterator categoryIt(treeView, QTreeWidgetItemIterator::HasChildren);
-        while (*categoryIt)
+        while (*categoryIt) {
             (*categoryIt++)->setHidden(true);
+        }
         QTreeWidgetItemIterator it(treeView, QTreeWidgetItemIterator::NoChildren);
         while (*it) {
-            auto modelName = (*it)->text(0);
+            const auto modelName = (*it)->text(0);
             const bool match = (modelName.contains(text, Qt::CaseInsensitive));
             (*it)->setHidden(!match);
             if (match) {
@@ -152,8 +151,9 @@ void DataFlowGraphicsScene::save() const
                                                     tr("Flow Scene Files (*.flow)"));
 
     if (!fileName.isEmpty()) {
-        if (!fileName.endsWith("flow", Qt::CaseInsensitive))
+        if (!fileName.endsWith("flow", Qt::CaseInsensitive)) {
             fileName += ".flow";
+        }
 
         QFile file(fileName);
         if (file.open(QIODevice::WriteOnly)) {
@@ -164,25 +164,23 @@ void DataFlowGraphicsScene::save() const
 
 void DataFlowGraphicsScene::load()
 {
-    QString fileName = QFileDialog::getOpenFileName(nullptr,
-                                                    tr("Open Flow Scene"),
-                                                    QDir::homePath(),
-                                                    tr("Flow Scene Files (*.flow)"));
+    const QString fileName = QFileDialog::getOpenFileName(nullptr,
+                                                          tr("Open Flow Scene"),
+                                                          QDir::homePath(),
+                                                          tr("Flow Scene Files (*.flow)"));
 
-    if (!QFileInfo::exists(fileName))
+    if (!QFileInfo::exists(fileName)) {
         return;
+    }
 
     QFile file(fileName);
-
-    if (!file.open(QIODevice::ReadOnly))
+    if (!file.open(QIODevice::ReadOnly)) {
         return;
+    }
 
     clearScene();
-
-    QByteArray const wholeFile = file.readAll();
-
+    const QByteArray wholeFile = file.readAll();
     _graphModel.load(QJsonDocument::fromJson(wholeFile).object());
-
     Q_EMIT sceneLoaded();
 }
 

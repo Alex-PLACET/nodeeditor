@@ -14,10 +14,10 @@ NodeGraphicsObject *locateNodeAt(QPointF scenePoint,
                                  QTransform const &viewTransform)
 {
     // items under cursor
-    QList<QGraphicsItem *> items = scene.items(scenePoint,
-                                               Qt::IntersectsItemShape,
-                                               Qt::DescendingOrder,
-                                               viewTransform);
+    const QList<QGraphicsItem *> items = scene.items(scenePoint,
+                                                     Qt::IntersectsItemShape,
+                                                     Qt::DescendingOrder,
+                                                     viewTransform);
 
     // items convertable to NodeGraphicsObject
     std::vector<QGraphicsItem *> filteredItems;

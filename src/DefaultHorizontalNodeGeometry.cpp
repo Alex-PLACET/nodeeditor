@@ -36,15 +36,15 @@ void DefaultHorizontalNodeGeometry::recomputeSize(NodeId const nodeId) const
         height = std::max(height, static_cast<unsigned int>(w->height()));
     }
 
-    QRectF const capRect = captionRect(nodeId);
+    const QRectF capRect = captionRect(nodeId);
 
     height += capRect.height();
 
     height += _portSpasing; // space above caption
     height += _portSpasing; // space below caption
 
-    unsigned int inPortWidth = maxPortsTextAdvance(nodeId, PortType::In);
-    unsigned int outPortWidth = maxPortsTextAdvance(nodeId, PortType::Out);
+    const unsigned int inPortWidth = maxPortsTextAdvance(nodeId, PortType::In);
+    const unsigned int outPortWidth = maxPortsTextAdvance(nodeId, PortType::Out);
 
     unsigned int width = inPortWidth + outPortWidth + 4 * _portSpasing;
 
@@ -54,7 +54,7 @@ void DefaultHorizontalNodeGeometry::recomputeSize(NodeId const nodeId) const
 
     width = std::max(width, static_cast<unsigned int>(capRect.width()) + 2 * _portSpasing);
 
-    QSize size(width, height);
+    const QSize size(width, height);
 
     _graphModel.setNodeData(nodeId, NodeRole::Size, size);
 }

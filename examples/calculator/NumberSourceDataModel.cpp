@@ -87,24 +87,19 @@ QWidget *NumberSourceDataModel::embeddedWidget()
 {
     if (!_lineEdit) {
         _lineEdit = new QLineEdit();
-
         _lineEdit->setValidator(new QDoubleValidator());
         _lineEdit->setMaximumSize(_lineEdit->sizeHint());
-
         connect(_lineEdit, &QLineEdit::textChanged, this, &NumberSourceDataModel::onTextEdited);
-
         _lineEdit->setText(QString::number(_number->number()));
     }
-
     return _lineEdit;
 }
 
 void NumberSourceDataModel::setNumber(double n)
 {
     _number = std::make_shared<DecimalData>(n);
-
     Q_EMIT dataUpdated(0);
-
-    if (_lineEdit)
+    if (_lineEdit) {
         _lineEdit->setText(QString::number(_number->number()));
+    }
 }
