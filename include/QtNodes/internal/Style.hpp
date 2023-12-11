@@ -24,8 +24,7 @@ public:
     /// Loads from utf-8 byte array.
     virtual void loadJsonFromByteArray(QByteArray const &byteArray)
     {
-        auto json = QJsonDocument::fromJson(byteArray).object();
-
+        const auto json = QJsonDocument::fromJson(byteArray).object();
         loadJson(json);
     }
 
@@ -37,7 +36,6 @@ public:
 
         if (!file.open(QIODevice::ReadOnly)) {
             qWarning() << "Couldn't open file " << fileName;
-
             return;
         }
 

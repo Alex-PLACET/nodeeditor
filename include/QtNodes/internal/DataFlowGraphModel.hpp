@@ -85,12 +85,12 @@ public:
     template<typename NodeDelegateModelType>
     NodeDelegateModelType *delegateModel(NodeId const nodeId)
     {
-        auto it = _models.find(nodeId);
-        if (it == _models.end())
+        const auto it = _models.find(nodeId);
+        if (it == _models.end()) {
             return nullptr;
+        }
 
-        auto model = dynamic_cast<NodeDelegateModelType *>(it->second.get());
-
+        const auto model = dynamic_cast<NodeDelegateModelType *>(it->second.get());
         return model;
     }
 

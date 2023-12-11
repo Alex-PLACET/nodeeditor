@@ -22,15 +22,10 @@ void DefaultNodePainter::paint(QPainter *painter, NodeGraphicsObject &ngo) const
     //geometry.recomputeSizeIfFontChanged(painter->font());
 
     drawNodeRect(painter, ngo);
-
     drawConnectionPoints(painter, ngo);
-
     drawFilledConnectionPoints(painter, ngo);
-
     drawNodeCaption(painter, ngo);
-
     drawEntryLabels(painter, ngo);
-
     drawResizeRect(painter, ngo);
 }
 
@@ -54,7 +49,6 @@ void DefaultNodePainter::drawNodeRect(QPainter *painter, NodeGraphicsObject &ngo
     }
 
     QLinearGradient gradient(QPointF(0.0, 0.0), QPointF(2.0, size.height()));
-
     gradient.setColorAt(0.0, nodeStyle.GradientColor0);
     gradient.setColorAt(0.10, nodeStyle.GradientColor1);
     gradient.setColorAt(0.90, nodeStyle.GradientColor2);

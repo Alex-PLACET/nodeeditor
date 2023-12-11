@@ -28,7 +28,6 @@ namespace nitro {
         QtNodes::DataFlowGraphModel *dataModel_;
         QtNodes::BasicGraphicsScene *scene_ = nullptr;
 
-
     private:
         QMenu *nodeMenu_ = nullptr;
         void spawnNodeMenu();

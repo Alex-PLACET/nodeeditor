@@ -126,19 +126,17 @@ inline std::ostream &operator<<(std::ostream &ostr, ConnectionId const connectio
     return ostr;
 }
 
-inline QJsonObject toJson(ConnectionId const &connId)
+inline QJsonObject toJson(const ConnectionId &connId)
 {
     QJsonObject connJson;
-
     connJson["outNodeId"] = static_cast<qint64>(connId.outNodeId);
     connJson["outPortIndex"] = static_cast<qint64>(connId.outPortIndex);
     connJson["intNodeId"] = static_cast<qint64>(connId.inNodeId);
     connJson["inPortIndex"] = static_cast<qint64>(connId.inPortIndex);
-
     return connJson;
 }
 
-inline ConnectionId fromJson(QJsonObject const &connJson)
+inline ConnectionId fromJson(const QJsonObject &connJson)
 {
     ConnectionId connId{static_cast<NodeId>(connJson["outNodeId"].toInt(InvalidNodeId)),
                         static_cast<PortIndex>(connJson["outPortIndex"].toInt(InvalidPortIndex)),

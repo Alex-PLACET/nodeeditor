@@ -33,10 +33,10 @@ bool dfs(AbstractGraphModel &model, NodeId currentNode, NodeId targetNode, std::
     }
     visited[currentNode] = true;
 
-    unsigned int nOutPorts = model.nodeData<PortCount>(currentNode, NodeRole::OutPortCount);
+    const PortCount nOutPorts = model.nodeData<PortCount>(currentNode, NodeRole::OutPortCount);
     for (PortIndex index = 0; index < nOutPorts; ++index) {
         const auto &outConnectionIds = model.connections(currentNode, PortType::Out, index);
-        for (auto& connection : outConnectionIds) {
+        for (const auto &connection : outConnectionIds) {
             const NodeId neighbour = connection.inNodeId;
             if (!visited[neighbour]) {
                 if (dfs(model, neighbour, targetNode, visited)) {

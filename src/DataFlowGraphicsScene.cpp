@@ -42,17 +42,14 @@ DataFlowGraphicsScene::DataFlowGraphicsScene(DataFlowGraphModel &graphModel, QOb
 std::vector<NodeId> DataFlowGraphicsScene::selectedNodes() const
 {
     const QList<QGraphicsItem *> graphicsItems = selectedItems();
-
     std::vector<NodeId> result;
     result.reserve(graphicsItems.size());
-
     for (QGraphicsItem *item : graphicsItems) {
         const auto ngo = qgraphicsitem_cast<NodeGraphicsObject *>(item);
         if (ngo != nullptr) {
             result.push_back(ngo->nodeId());
         }
     }
-
     return result;
 }
 

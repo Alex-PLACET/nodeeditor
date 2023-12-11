@@ -5,6 +5,7 @@
 #include <QtCore/QMetaObject>
 
 #include <limits>
+#include <stdint.h>
 
 /**
  * @file
@@ -38,7 +39,7 @@ Q_ENUM_NS(NodeRole)
 /**
  * Specific flags regulating node features and appeaarence.
  */
-enum NodeFlag {
+enum class NodeFlag {
     NoFlags = 0x0,   ///< Default NodeFlag
     Resizable = 0x1, ///< Lets the node be resizable
     Locked = 0x2
@@ -80,15 +81,15 @@ enum class PortType {
 };
 Q_ENUM_NS(PortType)
 
-using PortCount = unsigned int;
+using PortCount = int64_t;
 
 /// ports are consecutively numbered starting from zero.
-using PortIndex = unsigned int;
+using PortIndex = int64_t;
 
 static constexpr PortIndex InvalidPortIndex = std::numeric_limits<PortIndex>::max();
 
 /// Unique Id associated with each node in the GraphModel.
-using NodeId = unsigned int;
+using NodeId = int64_t;
 
 static constexpr NodeId InvalidNodeId = std::numeric_limits<NodeId>::max();
 

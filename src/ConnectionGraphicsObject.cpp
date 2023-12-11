@@ -58,12 +58,9 @@ void ConnectionGraphicsObject::initializePosition()
 
     if (_connectionState.requiredPort() != PortType::None) {
         const PortType attachedPort = oppositePort(_connectionState.requiredPort());
-
         const PortIndex portIndex = getPortIndex(attachedPort, _connectionId);
         const NodeId nodeId = getNodeId(attachedPort, _connectionId);
-
         const NodeGraphicsObject *ngo = nodeScene()->nodeGraphicsObject(nodeId);
-
         if (ngo) {
             const QTransform nodeSceneTransform = ngo->sceneTransform();
             const AbstractNodeGeometry &geometry = nodeScene()->nodeGeometry();
@@ -71,7 +68,6 @@ void ConnectionGraphicsObject::initializePosition()
                                                            attachedPort,
                                                            portIndex,
                                                            nodeSceneTransform);
-
             this->setPos(pos);
         }
     }
@@ -97,7 +93,6 @@ ConnectionId const &ConnectionGraphicsObject::connectionId() const
 QRectF ConnectionGraphicsObject::boundingRect() const
 {
     const auto points = pointsC1C2();
-
     // `normalized()` fixes inverted rects.
     const QRectF basicRect = QRectF(_out, _in).normalized();
     const QRectF c1c2Rect = QRectF(points.first, points.second).normalized();

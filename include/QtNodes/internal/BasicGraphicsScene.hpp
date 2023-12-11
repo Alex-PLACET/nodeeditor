@@ -180,9 +180,11 @@ private:
 
     Qt::Orientation _orientation;
 
-    bool portVacant(NodeId nodeId, const PortIndex portIndex, const PortType portType);
+    bool portVacant(NodeId nodeId, const PortIndex portIndex, const PortType portType) const;
 
-    NodeDataType getDataType(NodeId nodeId, const PortIndex portIndex, const PortType portType);
+    NodeDataType getDataType(NodeId nodeId,
+                             const PortIndex portIndex,
+                             const PortType portType) const;
 };
 
 } // namespace QtNodes

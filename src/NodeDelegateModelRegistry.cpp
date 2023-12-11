@@ -16,19 +16,19 @@ std::unique_ptr<NodeDelegateModel> NodeDelegateModelRegistry::create(QString con
     return nullptr;
 }
 
-NodeDelegateModelRegistry::RegisteredModelCreatorsMap const &
+const NodeDelegateModelRegistry::RegisteredModelCreatorsMap &
 NodeDelegateModelRegistry::registeredModelCreators() const
 {
     return _registeredItemCreators;
 }
 
-NodeDelegateModelRegistry::RegisteredModelsCategoryMap const &
+const NodeDelegateModelRegistry::RegisteredModelsCategoryMap &
 NodeDelegateModelRegistry::registeredModelsCategoryAssociation() const
 {
     return _registeredModelsCategory;
 }
 
-NodeDelegateModelRegistry::CategoriesSet const &NodeDelegateModelRegistry::categories() const
+const NodeDelegateModelRegistry::CategoriesSet &NodeDelegateModelRegistry::categories() const
 {
     return _categories;
 }

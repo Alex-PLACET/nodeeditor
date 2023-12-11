@@ -1,4 +1,5 @@
 #include "AbstractGraphModel.hpp"
+#include "Definitions.hpp"
 
 #include <QtNodes/ConnectionIdUtils>
 
@@ -14,7 +15,7 @@ void AbstractGraphModel::portsAboutToBeDeleted(NodeId const nodeId,
     const auto portCountRole = portType == PortType::In ? NodeRole::InPortCount
                                                         : NodeRole::OutPortCount;
 
-    const unsigned int portCount = nodeData(nodeId, portCountRole).toUInt();
+    const PortCount portCount = nodeData(nodeId, portCountRole).toUInt();
 
     if (first > portCount - 1) {
         return;
@@ -24,7 +25,7 @@ void AbstractGraphModel::portsAboutToBeDeleted(NodeId const nodeId,
         return;
     }
 
-    const auto clampedLast = std::min(last, portCount - 1);
+    const PortCount clampedLast = std::min(last, portCount - 1);
 
     for (PortIndex portIndex = first; portIndex <= clampedLast; ++portIndex) {
         const std::unordered_set<ConnectionId> conns = connections(nodeId, portType, portIndex);
