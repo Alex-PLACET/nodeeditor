@@ -11,7 +11,7 @@ std::unique_ptr<NodeDelegateModel> NodeDelegateModelRegistry::create(QString con
 {
     const auto it = _registeredItemCreators.find(modelName);
     if (it != _registeredItemCreators.end()) {
-        return it->second();
+        return it->second(_convertersRegister);
     }
     return nullptr;
 }
@@ -31,4 +31,9 @@ NodeDelegateModelRegistry::registeredModelsCategoryAssociation() const
 const NodeDelegateModelRegistry::CategoriesSet &NodeDelegateModelRegistry::categories() const
 {
     return _categories;
+}
+
+const std::shared_ptr<QtNodes::ConvertersRegister> &NodeDelegateModelRegistry::convertersRegister()
+{
+    return _convertersRegister;
 }

@@ -24,9 +24,7 @@ namespace QtNodes {
 
         setFlag(QGraphicsItem::ItemDoesntPropagateOpacityToChildren, true);
         setFlag(QGraphicsItem::ItemIsFocusable, true);
-
         setLockedState();
-
         setCacheMode(QGraphicsItem::DeviceCoordinateCache);
 
         const QJsonObject nodeStyleJson = _graphModel.nodeData(_nodeId, NodeRole::Style)
@@ -39,27 +37,21 @@ namespace QtNodes {
             effect->setOffset(4, 4);
             effect->setBlurRadius(20);
             effect->setColor(nodeStyle.ShadowColor);
-
             setGraphicsEffect(effect);
         }
 
         setOpacity(nodeStyle.Opacity);
-
         setAcceptHoverEvents(true);
-
         setZValue(0);
-
         embedQWidget();
-
         nodeScene()->nodeGeometry().recomputeSize(_nodeId);
-
-        QPointF const pos = _graphModel.nodeData<QPointF>(_nodeId, NodeRole::Position);
-
+        const QPointF pos = _graphModel.nodeData<QPointF>(_nodeId, NodeRole::Position);
         setPos(pos);
 
-        connect(&_graphModel, &AbstractGraphModel::nodeFlagsUpdated, [this](NodeId const nodeId) {
-            if (_nodeId == nodeId)
+        connect(&_graphModel, &AbstractGraphModel::nodeFlagsUpdated, [this](const NodeId nodeId) {
+            if (_nodeId == nodeId) {
                 setLockedState();
+            }
         });
     }
 
@@ -77,16 +69,13 @@ namespace QtNodes {
 
         if (auto w = _graphModel.nodeData(_nodeId, NodeRole::Widget).value<QWidget *>()) {
             _proxyWidget = new QGraphicsProxyWidget(this);
-
             _proxyWidget->setWidget(w);
-
             _proxyWidget->setPreferredWidth(5);
-
             geometry.recomputeSize(_nodeId);
 
             if (w->sizePolicy().verticalPolicy() & QSizePolicy::ExpandFlag) {
-                unsigned int widgetHeight = geometry.size(_nodeId).height()
-                                            - geometry.captionRect(_nodeId).height();
+                const unsigned int widgetHeight = geometry.size(_nodeId).height()
+                                                  - geometry.captionRect(_nodeId).height();
 
                 // If the widget wants to use as much vertical space as possible, set
                 // it to have the geom's equivalentWidgetHeight.

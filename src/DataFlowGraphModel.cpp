@@ -1,5 +1,5 @@
 #include "DataFlowGraphModel.hpp"
-#include "ConnectionIdHash.hpp"
+#include "ConvertersRegister.hpp"
 
 #include <QJsonArray>
 
@@ -111,9 +111,10 @@ bool DataFlowGraphModel::connectionPossible(const ConnectionId connectionId) con
             .value<NodeDataType>();
     };
 
-    auto datOut = getDataType(PortType::Out);
-    auto datIn = getDataType(PortType::In);
-    return datOut.id == datIn.id || datIn.allowConversionFrom(datOut.id);
+    const auto datOut = getDataType(PortType::Out);
+    const auto datIn = getDataType(PortType::In);
+    const bool isSame = datOut.id == datIn.id;
+    return isSame || _registry->convertersRegister()->contains(FromToTypes{datOut.id, datIn.id});
 }
 
 void DataFlowGraphModel::addConnection(ConnectionId const connectionId)

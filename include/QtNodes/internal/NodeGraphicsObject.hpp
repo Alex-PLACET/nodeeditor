@@ -31,13 +31,9 @@ public:
 
     BasicGraphicsScene *nodeScene() const;
 
-    NodeId nodeId() { return _nodeId; }
-
     NodeId nodeId() const { return _nodeId; }
 
     NodeState &nodeState() { return _nodeState; }
-
-    NodeState const &nodeState() const { return _nodeState; }
 
     QRectF boundingRect() const override;
 

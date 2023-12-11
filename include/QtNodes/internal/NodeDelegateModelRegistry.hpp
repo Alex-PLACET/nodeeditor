@@ -1,10 +1,8 @@
 #pragma once
 
+#include "ConvertersRegister.hpp"
 #include "Export.hpp"
-#include "NodeData.hpp"
 #include "NodeDelegateModel.hpp"
-#include "QStringStdHash.hpp"
-
 #include <QtCore/QString>
 
 #include <functional>
@@ -14,6 +12,7 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+#include <QtNodes/ConvertersRegister>
 
 namespace QtNodes {
 
@@ -22,7 +21,8 @@ class NODE_EDITOR_PUBLIC NodeDelegateModelRegistry
 {
 public:
     using RegistryItemPtr = std::unique_ptr<NodeDelegateModel>;
-    using RegistryItemCreator = std::function<RegistryItemPtr()>;
+    using RegistryItemCreator
+        = std::function<RegistryItemPtr(const std::shared_ptr<const ConvertersRegister> &)>;
     using RegisteredModelCreatorsMap = std::unordered_map<QString, RegistryItemCreator>;
     using RegisteredModelsCategoryMap = std::unordered_map<QString, QString>;
     using CategoriesSet = std::set<QString>;
@@ -41,14 +41,14 @@ public:
 
 public:
     template<typename ModelType>
-    void registerModel(RegistryItemCreator creator, QString const &category = "Nodes")
+    void registerModel(RegistryItemCreator creator, const QString &category = "Nodes")
     {
-        QString const name = computeName<ModelType>(HasStaticMethodName<ModelType>{}, creator);
-        if (!_registeredItemCreators.count(name)) {
+        const QString name = computeName<ModelType>(HasStaticMethodName<ModelType>{}, creator);
+        if (!_registeredItemCreators.contains(name)) {
             _registeredItemCreators[name] = std::move(creator);
             _categories.insert(category);
             _registeredModelsCategory[name] = category;
-        }
+        } // TODO: Error handling
     }
 
     template<typename ModelType>
@@ -96,11 +96,13 @@ public:
 
     std::unique_ptr<NodeDelegateModel> create(QString const &modelName);
 
-    RegisteredModelCreatorsMap const &registeredModelCreators() const;
+    const RegisteredModelCreatorsMap &registeredModelCreators() const;
 
-    RegisteredModelsCategoryMap const &registeredModelsCategoryAssociation() const;
+    const RegisteredModelsCategoryMap &registeredModelsCategoryAssociation() const;
 
-    CategoriesSet const &categories() const;
+    const CategoriesSet &categories() const;
+
+    const std::shared_ptr<ConvertersRegister> &convertersRegister();
 
 #if 0
   TypeConverter
@@ -114,6 +116,8 @@ private:
     CategoriesSet _categories;
 
     RegisteredModelCreatorsMap _registeredItemCreators;
+
+    std::shared_ptr<ConvertersRegister> _convertersRegister = std::make_shared<ConvertersRegister>();
 
 #if 0
   RegisteredTypeConvertersMap _registeredTypeConverters;
@@ -130,20 +134,20 @@ private:
     template<typename T>
     struct HasStaticMethodName<
         T,
-        typename std::enable_if<std::is_same<decltype(T::Name()), QString>::value>::type>
+        typename std::enable_if_t<std::is_same<decltype(T::Name()), QString>::value>>
         : std::true_type
     {};
 
     template<typename ModelType>
-    static QString computeName(std::true_type, RegistryItemCreator const &)
+    static QString computeName(std::true_type, const RegistryItemCreator &)
     {
         return ModelType::Name();
     }
 
     template<typename ModelType>
-    static QString computeName(std::false_type, RegistryItemCreator const &creator)
+    QString computeName(std::false_type, const RegistryItemCreator &creator) const
     {
-        return creator()->name();
+        return creator(_convertersRegister)->name();
     }
 
     template<typename T>

@@ -8,13 +8,11 @@ namespace QtNodes {
         InvalidData() = default;
 
         [[nodiscard]] NodeDataType type() const override {
-            return NodeDataType{"invalid", "Invalid", {0, 0, 0}, {}};
+            return NodeDataType{
+                "invalid", "Invalid", {0, 0, 0} // TODO: use a different color
+            };
         }
 
         [[nodiscard]] bool empty() const override { return true; }
-
-        void allowConversionFrom(const QString &id) override {
-            Q_UNUSED(id)
-        }
     };
 } // QtNodes

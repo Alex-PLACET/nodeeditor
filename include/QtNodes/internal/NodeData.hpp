@@ -20,13 +20,6 @@ struct NODE_EDITOR_PUBLIC NodeDataType
     QString id;
     QString name;
     QColor color;
-
-    // TODO: this is pretty hacky, but seems to be the easiest to do without a major rewrite
-    [[nodiscard]] bool allowConversionFrom(const QString& otherId) const {
-        return allowedFromConversions.count(otherId) > 0;
-    }
-
-    std::set<QString> allowedFromConversions;
 };
 
 /**
@@ -47,8 +40,6 @@ public:
     virtual NodeDataType type() const = 0;
 
     virtual bool empty() const = 0;
-
-    virtual void allowConversionFrom(const QString& id) = 0;
 };
 
 } // namespace QtNodes

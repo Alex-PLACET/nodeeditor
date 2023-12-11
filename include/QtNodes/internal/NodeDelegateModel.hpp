@@ -50,7 +50,7 @@ public:
     void load(QJsonObject const &) override;
 
 public:
-    virtual unsigned int nPorts(PortType portType) const = 0;
+    virtual size_t nPorts(PortType portType) const = 0;
 
     virtual NodeDataType dataType(PortType portType, PortIndex portIndex) const = 0;
 

@@ -5,3 +5,10 @@ if(BUILD_TESTING)
     add_subdirectory(Catch2)
   endif()
 endif()
+
+# FunctionTraits
+add_library(FunctionTraits INTERFACE)
+target_include_directories(FunctionTraits INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/FunctionTraits/>
+  $<INSTALL_INTERFACE:include/FunctionTraits>
+)

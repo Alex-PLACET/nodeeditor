@@ -138,11 +138,12 @@ inline QJsonObject toJson(const ConnectionId &connId)
 
 inline ConnectionId fromJson(const QJsonObject &connJson)
 {
-    ConnectionId connId{static_cast<NodeId>(connJson["outNodeId"].toInt(InvalidNodeId)),
-                        static_cast<PortIndex>(connJson["outPortIndex"].toInt(InvalidPortIndex)),
-                        static_cast<NodeId>(connJson["intNodeId"].toInt(InvalidNodeId)),
-                        static_cast<PortIndex>(connJson["inPortIndex"].toInt(InvalidPortIndex))};
-
+    const ConnectionId connId{static_cast<NodeId>(connJson["outNodeId"].toInteger(InvalidNodeId)),
+                              static_cast<PortIndex>(
+                                  connJson["outPortIndex"].toInteger(InvalidPortIndex)),
+                              static_cast<NodeId>(connJson["intNodeId"].toInteger(InvalidNodeId)),
+                              static_cast<PortIndex>(
+                                  connJson["inPortIndex"].toInteger(InvalidPortIndex))};
     return connId;
 }
 
